@@ -67,7 +67,10 @@ you wire differently. Avoid GPIO2, 8 and 9 (strapping pins).
   After a reboot, games that started more than 5 hours earlier are treated as
   already expired (the API has no end time).
 - Each game is shown for `CARD_MS` (6 s), then the next one.
-- With nothing live or recently final, the screen shows the clock and "No live games".
+- The last card in every rotation shows the **date, time and weather** (current
+  temperature, conditions, high/low) from Open-Meteo, no API key. Set `WX_LAT` and
+  `WX_LON` in `config.h` to your location, plus `WX_FAHRENHEIT` and `CLOCK_24H`.
+  With no games on, this card is the only one shown.
 - Polls every 20 s while any game is live and every 5 min otherwise.
 - ESPN's scoreboard lists the current day's games, so a final from late night
   may drop off when the day rolls over.

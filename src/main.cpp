@@ -195,16 +195,125 @@ static void drawCard(const Game& g, int idx, int total) {
   tft.drawString(pg, 120, 228, 2);
 }
 
-static void drawIdle() {
+struct Weather {
+  bool valid;
+  float temp, hi, lo;
+  int code;
+};
+static Weather wx;
+
+static const char* wxText(int c) {
+  if (c == 0) return "Clear";
+  if (c <= 2) return "Partly cloudy";
+  if (c == 3) return "Overcast";
+  if (c == 45 || c == 48) return "Fog";
+  if (c >= 51 && c <= 57) return "Drizzle";
+  if (c >= 61 && c <= 67) return "Rain";
+  if (c >= 71 && c <= 77) return "Snow";
+  if (c >= 80 && c <= 82) return "Showers";
+  if (c == 85 || c == 86) return "Snow showers";
+  if (c >= 95) return "Thunderstorm";
+  return "";
+}
+
+static void fetchWeather() {
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+  http.useHTTP10(true);
+  http.setTimeout(8000);
+  char url[320];
+  snprintf(url, sizeof(url),
+           "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f"
+           "&current=temperature_2m,weather_code"
+           "&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto"
+           "&temperature_unit=%s",
+           (double)WX_LAT, (double)WX_LON, WX_FAHRENHEIT ? "fahrenheit" : "celsius");
+  if (!http.begin(client, url)) return;
+  int code = http.GET();
+  if (code != 200) {
+    Serial.printf("weather: HTTP %d\n", code);
+    http.end();
+    return;
+  }
+  JsonDocument filter;
+  filter["current"]["temperature_2m"] = true;
+  filter["current"]["weather_code"] = true;
+  filter["daily"]["temperature_2m_max"][0] = true;
+  filter["daily"]["temperature_2m_min"][0] = true;
+  JsonDocument doc;
+  DeserializationError err =
+      deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
+  http.end();
+  if (err || doc["current"]["temperature_2m"].isNull()) {
+    Serial.printf("weather: JSON %s\n", err.c_str());
+    return;
+  }
+  wx.temp = doc["current"]["temperature_2m"];
+  wx.code = doc["current"]["weather_code"] | 0;
+  wx.hi = doc["daily"]["temperature_2m_max"][0] | wx.temp;
+  wx.lo = doc["daily"]["temperature_2m_min"][0] | wx.temp;
+  wx.valid = true;
+}
+
+// Date, time and weather. Shown as the last card in the rotation.
+static void drawInfo() {
   struct tm t;
-  char hm[8] = "--:--";
-  if (getLocalTime(&t, 0)) strftime(hm, sizeof(hm), "%H:%M", &t);
+  bool have = getLocalTime(&t, 0);
+
   tft.fillScreen(TFT_BLACK);
+  tft.fillRect(0, 0, 240, 36, TFT_BLUE);
+  tft.setTextColor(TFT_WHITE, TFT_BLUE);
+  tft.setTextDatum(MC_DATUM);
+  char date[24] = "";
+  if (have) strftime(date, sizeof(date), "%a %b %e", &t);
+  tft.drawString(date, 120, 18, 4);
+
+  char hm[8] = "--:--";
+  const char* ampm = "";
+  if (have) {
+    if (CLOCK_24H) {
+      snprintf(hm, sizeof(hm), "%02d:%02d", t.tm_hour, t.tm_min);
+    } else {
+      int h = t.tm_hour % 12;
+      snprintf(hm, sizeof(hm), "%d:%02d", h ? h : 12, t.tm_min);
+      ampm = t.tm_hour >= 12 ? "PM" : "AM";
+    }
+  }
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.setTextDatum(TL_DATUM);
+  int tw = tft.textWidth(hm, 6);
+  int aw = *ampm ? tft.textWidth(ampm, 4) + 6 : 0;
+  int x0 = (240 - tw - aw) / 2;
+  tft.drawString(hm, x0, 50, 6);
+  if (*ampm) {
+    tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+    tft.drawString(ampm, x0 + tw + 6, 74, 4);
+  }
+
+  tft.setTextDatum(MC_DATUM);
+  if (!wx.valid) {
+    tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
+    tft.drawString("Weather unavailable", 120, 150, 2);
+    return;
+  }
+  char num[8];
+  snprintf(num, sizeof(num), "%d", (int)roundf(wx.temp));
+  int nw = tft.textWidth(num, 6);
+  int x1 = (240 - nw - 24) / 2;
+  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.setTextDatum(TL_DATUM);
+  tft.drawString(num, x1, 118, 6);
+  tft.drawCircle(x1 + nw + 8, 128, 4, TFT_YELLOW);
+  tft.drawString(WX_FAHRENHEIT ? "F" : "C", x1 + nw + 15, 122, 4);
+
   tft.setTextDatum(MC_DATUM);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString(hm, 120, 90, 6);
-  tft.setTextColor(TFT_DARKGREY, TFT_BLACK);
-  tft.drawString("No live games", 120, 150, 4);
+  tft.drawString(wxText(wx.code), 120, 192, 4);
+  char hl[24];
+  snprintf(hl, sizeof(hl), "H %d   L %d", (int)roundf(wx.hi), (int)roundf(wx.lo));
+  tft.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+  tft.drawString(hl, 120, 222, 2);
 }
 
 static void ensureWifi() {
@@ -233,7 +342,8 @@ void setup() {
 }
 
 void loop() {
-  static uint32_t lastPoll = 0, lastCard = 0;
+  static uint32_t lastPoll = 0, lastCard = 0, lastWx = 0;
+  static bool wxTried = false;
   static bool firstRun = true;
   static int cardIdx = 0;
   static String lastSig;
@@ -249,27 +359,35 @@ void loop() {
   }
   pruneExpired();
 
-  if (games.empty()) {
+  if (WiFi.status() == WL_CONNECTED && (!wxTried || millis() - lastWx >= WX_POLL_MS)) {
+    fetchWeather();
+    wxTried = true;
+    lastWx = millis();
+  }
+
+  // Rotation: every game, then the date/time/weather card as the last slot.
+  int total = games.size() + 1;
+  if (now - lastCard >= CARD_MS) {
+    cardIdx++;
+    lastCard = now;
+  }
+  if (cardIdx >= total) cardIdx = 0;
+
+  String sig;
+  if (cardIdx == (int)games.size()) {
     struct tm t;
-    char sig[16] = "idle";
-    if (getLocalTime(&t, 0)) snprintf(sig, sizeof(sig), "idle %02d:%02d", t.tm_hour, t.tm_min);
-    if (lastSig != sig) {
-      lastSig = sig;
-      drawIdle();
-    }
+    getLocalTime(&t, 0);
+    sig = String("info|") + t.tm_hour + ":" + t.tm_min + "|" + (int)wx.temp + "|" + wx.code +
+          "|" + wx.valid + "|" + total;
   } else {
-    if (now - lastCard >= CARD_MS) {
-      cardIdx++;
-      lastCard = now;
-    }
-    if (cardIdx >= (int)games.size()) cardIdx = 0;
     const Game& g = games[cardIdx];
-    String sig = String(g.id) + "|" + g.awayScore + "|" + g.homeScore + "|" + g.detail + "|" +
-                 g.live + "|" + games.size() + "|" + cardIdx;
-    if (sig != lastSig) {
-      lastSig = sig;
-      drawCard(g, cardIdx, games.size());
-    }
+    sig = String(g.id) + "|" + g.awayScore + "|" + g.homeScore + "|" + g.detail + "|" +
+          g.live + "|" + total + "|" + cardIdx;
+  }
+  if (sig != lastSig) {
+    lastSig = sig;
+    if (cardIdx == (int)games.size()) drawInfo();
+    else drawCard(games[cardIdx], cardIdx, games.size());
   }
   delay(200);
 }
