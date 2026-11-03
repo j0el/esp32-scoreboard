@@ -13,6 +13,8 @@ Scores come from ESPN's unofficial public scoreboard JSON (no API key).
 
 ## Wiring
 
+![ESP32-C3 to display wiring diagram](docs/wiring-diagram.svg)
+
 | Display pin | ESP32-C3 pin | Notes |
 |-------------|--------------|-------|
 | GND         | GND          | |

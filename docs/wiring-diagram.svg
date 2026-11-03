@@ -1,0 +1,71 @@
+<svg width="680" height="650" viewBox="0 0 680 650" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>ESP32-C3 to ST7789 display wiring</title>
+<desc>Physical pin layout showing which ESP32-C3 pins solder to which display pins</desc>
+<rect x="0" y="0" width="680" height="650" fill="#ffffff"/>
+
+<rect x="180" y="100" width="140" height="440" rx="12" fill="none" stroke="#5f5e5a" stroke-width="1"/>
+<rect x="235" y="90" width="30" height="12" rx="2" fill="#b4b2a9"/>
+<text x="250" y="84" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#5f5e5a">USB-C</text>
+<text x="250" y="122" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#2c2c2a">ESP32-C3</text>
+<text x="250" y="138" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#5f5e5a">SuperMini board</text>
+
+<rect x="520" y="100" width="110" height="440" rx="12" fill="none" stroke="#5f5e5a" stroke-width="1"/>
+<text x="575" y="122" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#2c2c2a">Display</text>
+<text x="575" y="138" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#5f5e5a">ST7789 240x240</text>
+
+<path d="M320,225 L520,170" fill="none" stroke="#8a8a85" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M320,280 L520,218" fill="none" stroke="#D85A30" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M320,500 L520,362" fill="none" stroke="#7F77DD" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M180,335 L160,335 L160,560 L480,560 L480,506 L520,506" fill="none" stroke="#5f9a1e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M180,390 L155,390 L155,575 L485,575 L485,266 L520,266" fill="none" stroke="#BA7517" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M180,445 L150,445 L150,590 L490,590 L490,410 L520,410" fill="none" stroke="#D4537E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M180,500 L145,500 L145,605 L495,605 L495,314 L520,314" fill="none" stroke="#378ADD" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+<circle cx="180" cy="170" r="4" fill="#b4b2a9"/>
+<text x="186" y="174" font-family="sans-serif" font-size="14" fill="#2c2c2a">D0</text>
+<circle cx="180" cy="225" r="4" fill="#b4b2a9"/>
+<text x="186" y="229" font-family="sans-serif" font-size="14" fill="#2c2c2a">D1</text>
+<circle cx="180" cy="280" r="4" fill="#b4b2a9"/>
+<text x="186" y="284" font-family="sans-serif" font-size="14" fill="#2c2c2a">D2</text>
+<circle cx="180" cy="335" r="4" fill="#5f9a1e"/>
+<text x="186" y="339" font-family="sans-serif" font-size="14" fill="#2c2c2a">D3</text>
+<circle cx="180" cy="390" r="4" fill="#BA7517"/>
+<text x="186" y="394" font-family="sans-serif" font-size="14" fill="#2c2c2a">D4</text>
+<circle cx="180" cy="445" r="4" fill="#D4537E"/>
+<text x="186" y="449" font-family="sans-serif" font-size="14" fill="#2c2c2a">D5</text>
+<circle cx="180" cy="500" r="4" fill="#378ADD"/>
+<text x="186" y="504" font-family="sans-serif" font-size="14" fill="#2c2c2a">D6</text>
+
+<circle cx="320" cy="170" r="4" fill="#b4b2a9"/>
+<text x="314" y="174" text-anchor="end" font-family="sans-serif" font-size="14" fill="#2c2c2a">VUSB</text>
+<circle cx="320" cy="225" r="4" fill="#8a8a85"/>
+<text x="314" y="229" text-anchor="end" font-family="sans-serif" font-size="14" fill="#2c2c2a">GND</text>
+<circle cx="320" cy="280" r="4" fill="#D85A30"/>
+<text x="314" y="284" text-anchor="end" font-family="sans-serif" font-size="14" fill="#2c2c2a">3V3</text>
+<circle cx="320" cy="335" r="4" fill="#b4b2a9"/>
+<text x="314" y="339" text-anchor="end" font-family="sans-serif" font-size="14" fill="#2c2c2a">D10</text>
+<circle cx="320" cy="390" r="4" fill="#b4b2a9"/>
+<text x="314" y="394" text-anchor="end" font-family="sans-serif" font-size="14" fill="#2c2c2a">D9</text>
+<circle cx="320" cy="445" r="4" fill="#b4b2a9"/>
+<text x="314" y="449" text-anchor="end" font-family="sans-serif" font-size="14" fill="#2c2c2a">D8</text>
+<circle cx="320" cy="500" r="4" fill="#7F77DD"/>
+<text x="314" y="504" text-anchor="end" font-family="sans-serif" font-size="14" fill="#2c2c2a">D7</text>
+
+<circle cx="520" cy="170" r="4" fill="#8a8a85"/>
+<text x="526" y="174" font-family="sans-serif" font-size="14" fill="#2c2c2a">GND</text>
+<circle cx="520" cy="218" r="4" fill="#D85A30"/>
+<text x="526" y="222" font-family="sans-serif" font-size="14" fill="#2c2c2a">VCC</text>
+<circle cx="520" cy="266" r="4" fill="#BA7517"/>
+<text x="526" y="270" font-family="sans-serif" font-size="14" fill="#2c2c2a">SCL</text>
+<circle cx="520" cy="314" r="4" fill="#378ADD"/>
+<text x="526" y="318" font-family="sans-serif" font-size="14" fill="#2c2c2a">SDA</text>
+<circle cx="520" cy="362" r="4" fill="#7F77DD"/>
+<text x="526" y="366" font-family="sans-serif" font-size="14" fill="#2c2c2a">RES</text>
+<circle cx="520" cy="410" r="4" fill="#D4537E"/>
+<text x="526" y="414" font-family="sans-serif" font-size="14" fill="#2c2c2a">DC</text>
+<circle cx="520" cy="458" r="4" fill="#b4b2a9"/>
+<text x="526" y="462" font-family="sans-serif" font-size="14" fill="#2c2c2a">CS</text>
+<text x="526" y="474" font-family="sans-serif" font-size="12" fill="#5f5e5a">(leave open)</text>
+<circle cx="520" cy="506" r="4" fill="#5f9a1e"/>
+<text x="526" y="510" font-family="sans-serif" font-size="14" fill="#2c2c2a">BLK</text>
+</svg>
