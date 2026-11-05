@@ -29,32 +29,68 @@ Scores come from ESPN's unofficial public scoreboard JSON (no API key).
 Pins are set in `platformio.ini` (`-DTFT_SCLK=4` and so on). Change them there if
 you wire differently. Avoid GPIO2, 8 and 9 (strapping pins).
 
-## Step by step
+## Step by step (macOS, from scratch)
 
-1. **Wire it** per the table above.
-2. **Install PlatformIO.** Either the VS Code extension, or the CLI:
+1. **Install the toolchain.**
    ```bash
-   uv tool install platformio    # or: pipx install platformio
+   xcode-select --install          # command line tools: git, clang -- skip if already installed
    ```
-3. **Clone and enter the repo:**
+   Then install PlatformIO Core. Either the VS Code extension, or the CLI via
+   [uv](https://docs.astral.sh/uv/) or [pipx](https://pipx.pypa.io/):
+   ```bash
+   brew install uv                 # if you don't have Homebrew: https://brew.sh
+   uv tool install platformio      # or: pipx install platformio
+   ```
+   No USB-to-serial driver to install: the ESP32-C3 SuperMini has a native USB
+   port, so macOS sees it directly once plugged in.
+
+2. **Clone and enter the repo:**
    ```bash
    git clone <this repo's URL> esp32-scoreboard
    cd esp32-scoreboard
    ```
-4. **Create your config:**
+
+3. **Wire the display** per the table/diagram above, then plug the board into
+   the Mac with a USB-C cable. Confirm macOS sees it:
+   ```bash
+   pio device list
+   ```
+   You should see something like `/dev/cu.usbmodem1101`.
+
+4. **Test the display** -- no WiFi, no config needed yet:
+   ```bash
+   pio run -e display_test -t upload -t monitor
+   ```
+   The screen should cycle every 2 s: color bars, then solid white, then
+   "Display OK" with the detected resolution. Serial prints which step it's
+   on. `Ctrl-C` exits the monitor. See Troubleshooting below if the screen
+   stays blank or colors look wrong.
+
+5. **Create your config:**
    ```bash
    cp include/config.example.h include/config.h
    ```
-   Edit `include/config.h`: set `WIFI_SSID`, `WIFI_PASS` (2.4 GHz WiFi only) and
-   `TZ_INFO` (your timezone). Optionally edit the `LEAGUES` list, the hold time
-   and the timing values. `config.h` is gitignored so your WiFi password stays local.
-5. **Plug in the board** by USB and build and flash:
+   Edit `include/config.h`: set `WIFI_SSID` and `WIFI_PASS` (2.4 GHz WiFi
+   only) -- needed for the WiFi test next and the real app. Also set
+   `TZ_INFO` (your timezone) and optionally the `LEAGUES` list, hold time and
+   timing values for the real app. `config.h` is gitignored so your WiFi
+   password stays local.
+
+6. **Test WiFi** -- no display needed:
+   ```bash
+   pio run -e wifi_test -t upload -t monitor
+   ```
+   You should see dots while it associates, then an IP address/RSSI line,
+   then an `HTTPS GET -> status 200, N bytes` line confirming it can reach
+   the internet (DNS + TLS working, not just link association).
+
+7. **Flash the real app** (the default environment, so no `-e` needed):
    ```bash
    pio run -t upload
    ```
    If the board is not detected, hold the **BOOT** button while plugging in
    USB, then run the command again.
-6. **Watch the logs** (optional):
+8. **Watch the logs** (optional):
    ```bash
    pio device monitor
    ```
